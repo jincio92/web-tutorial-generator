@@ -1,5 +1,4 @@
 # web-tutorial-generator
-A library that aims to simplify the creation of a tutorial or first time experience of a website or web-app
 <!-- Improved compatibility of back to top link: See: https://github.com/othneildrew/Best-README-Template/pull/73 -->
 <a name="readme-top"></a>
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
