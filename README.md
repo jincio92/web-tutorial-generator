@@ -59,8 +59,8 @@ Distributed under the MIT License. See `LICENSE.txt` for more information.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 
-
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 <!-- MARKDOWN LINKS & IMAGES -->
 <!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[license-shield]: https://img.shields.io/github/license/jincio92/mgdbtool.svg?style=for-the-badge
-[license-url]: https://github.com/jincio92/mgdbtool/blob/master/LICENSE.txt
+[license-shield]: https://img.shields.io/badge/License-MIT-green.svg
+[license-url]: https://opensource.org/licenses/MIT
