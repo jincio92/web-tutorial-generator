@@ -43,7 +43,6 @@ The library expect that a variable with the name ```tutorialGeneratorConfig``` w
 - [ ] Improve config file documentation
 - [ ] Add CSS class customizatin support
 - [ ] Add state saving for resuming an interrupted tutorial
-- [ ] Add "components" document to easily copy & paste sections of the readme
 
 See the [open issues](https://github.com/jincio92/web-tutorial-generator/issues) for a full list of proposed features (and known issues).
 
