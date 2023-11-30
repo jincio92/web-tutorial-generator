@@ -30,6 +30,18 @@ The library expect that a variable with the name ```tutorialGeneratorConfig``` w
 <script src="js/lib.js"></script>
 ```
 2. Add a file tutorialGenerator-config.js and declare a ```tutorialGeneratorConfig``` variable
+3. Insert the tutorial-generator component in your page (without it the tutorial wont start)
+```html
+<html>
+  <head>
+    <!-- Head stuff.. -->
+  </head>
+  <body>
+    <!-- Body stuff.. -->
+    <tutorial-generator></tutorial-generator>
+  </body>
+</html>
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
