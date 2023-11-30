@@ -1,4 +1,4 @@
-var config = {
+var tutorialGeneratorConfig = {
     startFunction: () => { console.log("start"); },
     enable: true,
     steps: [
@@ -24,9 +24,20 @@ var config = {
             elementId: "test-3",
             title: "Title 3",
             text: "This is the third step and it's not very important, but i need steps to test things",
-            preStep: () => { console.log('prestep 3'); },
-            postStep: () => { console.log('postStep 3'); },
+            preStep: () => {  if(window.location.pathname != '/'){ window.location= '/';} console.log('prestep 3'); },
+            postStep: () => { if(window.location.pathname != '/appuntamenti.html'){ window.location= '/appuntamenti.html';} console.log('postStep 3'); },
             nextAction: "none",
-            showPrevButton: true
+            showPrevButton: true,
+            showNextButton: true
+        },
+        {
+            elementId: "test-4",
+            title: "Title 4",
+            text: "This is the fourth step and it's not very important, but i need steps to test things. Also, it's in another page!",
+            preStep: () => { console.log('prestep 4'); },
+            postStep: () => { console.log('postStep 4'); },
+            nextAction: "none",
+            showPrevButton: true,
+            showNextButton: true
         }]
 }
