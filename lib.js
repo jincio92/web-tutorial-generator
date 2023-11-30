@@ -1,5 +1,34 @@
+const STORED_SESSION_KEY = 'tutorial-stored-session';
 
 /**
+ * @type {TutorialStoredSession}
+ */
+const DEFAULT_STORED_SESSION = {
+    completed: false,
+    currentStep: 0
+}
+/**
+ * Schema of the stored session of the tutorial
+ * @date 11/30/2023 - 11:56:01 AM
+ *
+ * @typedef {Object} TutorialStoredSession
+ * @property {boolean} completed - whether or not the tutorial has been completed
+ * @property {number} currentStep - indicates the current Step of the tutorial
+ */
+
+/**
+ * Schema of the configuration
+ * @date 11/29/2023 - 10:04:33 AM
+ *
+ * @typedef {Object} TutorialConfig - 
+ * @property {() => void} startFunction - 
+ * @property {() => void} finishFunction -
+ * @property {StepConfig[]} steps - 
+ * @property {boolean} enable - 
+ */
+
+/**
+ * Schema of the Step
  * @date 11/29/2023 - 10:04:33 AM
  * 
  * @typedef {Object} StepConfig - 
@@ -15,38 +44,46 @@
 
 /**
  * Description placeholder
- * @date 11/29/2023 - 10:04:33 AM
- *
- * @typedef {Object} TutorialConfig - 
- * @property {() => void} startFunction - 
- * @property {StepConfig[]} steps - 
- * @property {boolean} enable - 
- */
-
-/**
- * Description placeholder
  * @date 11/29/2023 - 10:04:39 AM
  *
  * @class TutorialGenerator
  * @typedef {TutorialGenerator}
  * @extends {HTMLElement}
+ * @property {TutorialStoredSession} storedSession - 
  */
 class TutorialGenerator extends HTMLElement {
     currentIndex = 0;
     pageWidth = 0;
     pageHeight = 0;
 
+    /**
+     * Description placeholder
+     * @date 11/30/2023 - 12:05:37 PM
+     *
+     * @type {TutorialStoredSession}
+     */
+    storedSession = null;
+
     constructor() {
         super();
-        if (!config || !config.enable) return;
-        this.shadow = this.attachShadow({ mode: 'closed' });
+        if (!tutorialGeneratorConfig || !tutorialGeneratorConfig.enable) { return; }
+        this.storedSession = JSON.parse(localStorage.getItem(STORED_SESSION_KEY));
+        if (this.storedSession == null) {
+            this.storedSession = DEFAULT_STORED_SESSION;
+            localStorage.setItem(STORED_SESSION_KEY, JSON.stringify(this.storedSession));
+        } else if (this.storedSession.completed) {
+            return;
+        } else {
+            this.currentIndex = this.storedSession.currentStep;
+        }
+        //this.shadow = this.attachShadow({ mode: 'closed' });
         document.addEventListener("DOMContentLoaded", () => {
             //window.addEventListener("load", () => {
             this.pageWidth = document.body.scrollWidth;
             this.pageHeight = document.body.scrollHeight;
-            config.startFunction();
+            tutorialGeneratorConfig.startFunction();
             setTimeout(() => {
-                this.executeStep(config.steps[this.currentIndex]);
+                this.executeStep(tutorialGeneratorConfig.steps[this.currentIndex]);
             }, 500);
         });
     }
@@ -71,28 +108,48 @@ class TutorialGenerator extends HTMLElement {
             rect.y = rect.y - bodyRect.y;
             this.render(rect, step);
             if (step.nextAction === 'click') {
-                this.shadow.getElementById('tutorialHighlightDiv').addEventListener('click', () => { this.postStep(step) }, { once: true });;
+                //this.shadow.getElementById('tutorialHighlightDiv').addEventListener('click', () => { this.postStep(step) }, { once: true });;
+                this.querySelector('#tutorialHighlightDiv').addEventListener('click', () => { this.postStep(step) }, { once: true });;
             }
         }
     }
 
     postStep(step) {
         this.reset();
+        this.currentIndex++;
+        this.updateStoredSession();
         step.postStep?.call();
-        if (config.steps[this.currentIndex + 1]) {
-            this.currentIndex++;
-            this.executeStep(config.steps[this.currentIndex]);
+        if (tutorialGeneratorConfig.steps[this.currentIndex]) {
+            this.executeStep(tutorialGeneratorConfig.steps[this.currentIndex]);
+        } else {
+            this.complete();
         }
     }
 
     prev() {
         this.currentIndex--;
-        if (this.currentIndex >= 0)
-            this.executeStep(config.steps[this.currentIndex]);
+        if (this.currentIndex >= 0) {
+            this.updateStoredSession()
+            this.executeStep(tutorialGeneratorConfig.steps[this.currentIndex]);
+        }
     }
 
     next() {
-        this.postStep(config.steps[this.currentIndex]);
+        this.postStep(tutorialGeneratorConfig.steps[this.currentIndex]);
+    }
+
+    complete() {
+        tutorialGeneratorConfig.finishFunction?.call();
+    }
+
+    updateStoredSession() {
+        this.storedSession.currentStep = this.currentIndex;
+        if (this.currentIndex == tutorialGeneratorConfig.steps.length) {
+            this.storedSession.completed = true;
+        } else {
+            this.storedSession.completed = false;
+        }
+        localStorage.setItem(STORED_SESSION_KEY, JSON.stringify(this.storedSession));
     }
 
     /**
@@ -127,10 +184,10 @@ class TutorialGenerator extends HTMLElement {
         if (step.showNextButton || step.showPrevButton) {
             footerHTML = '<div class="tutorial-footer">';
             if (step.showPrevButton) {
-                footerHTML += '<button id="tutorialPrevBtn" class="tutorialPrevBtn" >PREV</button>'
+                footerHTML += '<button id="tutorialPrevBtn" class="tutorialPrevBtn btn" >PREV</button>'
             }
             if (step.showNextButton) {
-                footerHTML += '<button id="tutorialNextBtn" class="tutorialNextBtn" >NEXT</button>'
+                footerHTML += '<button id="tutorialNextBtn" class="tutorialNextBtn btn" >NEXT</button>'
             }
             footerHTML += '</div>'
         }
@@ -138,7 +195,7 @@ class TutorialGenerator extends HTMLElement {
         <div class="tutorialDiv">
             <div id="tutorialHighlightDiv" class="tutorialHighlightDiv"></div>
             <div class="tutorialPop">
-                <h3 class="tutorialPop-header">${step.title}</h3>
+                <h2 class="tutorialPop-header">${step.title}</h3>
                 <div class="tutorialPop-body">
                 ${step.text}
                 </div>
@@ -150,7 +207,7 @@ class TutorialGenerator extends HTMLElement {
                 position: absolute;
                 top: ${rect.y}px;
                 left: ${rect.x}px;
-                z-index:999;
+                z-index: 99999;
                 display: flex;
             }
             .tutorialHighlightDiv{
@@ -182,7 +239,7 @@ class TutorialGenerator extends HTMLElement {
                 position: relative;
                 /*left: ${rect.width}px;*/
                 padding: 0px;
-                width: 200px;
+                width: 300px;
                 background-color: white;
                 border: 1px solid gray;
                 border-radius: .5rem;
@@ -193,7 +250,6 @@ class TutorialGenerator extends HTMLElement {
                 padding: .5rem 1rem;
                 margin-top: 0px;
                 margin-bottom: 0px;
-                font-size: 1rem;
                 background-color: #eeeeee;
                 border-bottom: 1px solid #dddddd;
                 border-radius: .5rem;
@@ -207,20 +263,32 @@ class TutorialGenerator extends HTMLElement {
             .tutorial-footer{
                 padding: .5rem .7rem;
             }
+
+            .tutorial-footer button{
+                margin-right: .5rem;
+            }
+
+            .tutorial-footer button:last-child{
+                margin-right: 0px;
+            }
         </style>
       `;
-        this.shadow.innerHTML = border;
+        //this.shadow.innerHTML = border;
+        this.innerHTML = border;
 
         if (step.showNextButton) {
-            this.shadow.getElementById('tutorialNextBtn')?.addEventListener("click", () => this.next(), { once: true });
+            //this.shadow.getElementById('tutorialNextBtn')?.addEventListener("click", () => this.next(), { once: true });
+            this.querySelector('#tutorialNextBtn')?.addEventListener("click", () => this.next(), { once: true });
         }
         if (step.showPrevButton) {
-            this.shadow.getElementById('tutorialPrevBtn')?.addEventListener("click", () => this.prev(), { once: true });
+            //this.shadow.getElementById('tutorialPrevBtn')?.addEventListener("click", () => this.prev(), { once: true });
+            this.querySelector('#tutorialPrevBtn')?.addEventListener("click", () => this.prev(), { once: true });
         }
     }
 
     reset() {
-        this.shadow.innerHTML = ``;
+        //this.shadow.innerHTML = ``;
+        this.innerHTML = ``;
     }
 }
 
